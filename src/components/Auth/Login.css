@@ -36,17 +36,18 @@
     margin-top: 5px;
     display: block;
   }
-  
+
   .password-wrapper {
     position: relative;
-    margin-bottom: 10px;
+    width: 100%;
   }
   
-  .show-password {
-    display: block;
-    font-size: 0.9em;
-    margin-top: 5px;
-    text-align: left;
-    color: #333;
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
   }
   

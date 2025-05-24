@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import './Login.css';
 
 function Login() {
@@ -53,14 +54,9 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <label className="show-password">
-            <input
-              type="checkbox"
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-            Show Password
-          </label>
+          <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
         </div>
 
         {errorMsg && <span className="error">{errorMsg}</span>}
