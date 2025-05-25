@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import './Login.css';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -9,6 +12,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,7 +31,11 @@ function Login() {
       });
 
       localStorage.setItem('token', response.data.token);
-      alert("Login Successful!");
+      toast.success('Logged in successfully!', {
+              position: 'top-right',
+              autoClose: 1000,
+              onClose: () => navigate('/home') // Redirect after toast closes
+            });
     } catch (error) {
       console.error("Login failed:", error);
       setErrorMsg("Login failed! Check email or password.");
