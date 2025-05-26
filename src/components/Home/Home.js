@@ -5,7 +5,7 @@ import Navbar from '../Navbar/Navbar';
 const Home = () => {
   return (
     <>
-    <Navbar />
+      <Navbar />
       <div className="home-content">
         <h2>Welcome to the Home Page!</h2>
         <p>This is a placeholder for your social media feed.</p>
