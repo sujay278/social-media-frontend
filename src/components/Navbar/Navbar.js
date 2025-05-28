@@ -1,42 +1,27 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
-const Navbar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleNavigation = (path) => {
-    if (path === 'logout') {
+const Navbar = ({ onNavigate }) => {
+  const handleNavigation = (section) => {
+    if (section === 'logout') {
       localStorage.removeItem('token');
-      navigate('/login');
+      window.location.href = '/login'; // or use navigate if available
     } else {
-      navigate(path);
+      onNavigate(section);
     }
   };
-
-  const isActive = (path) => location.pathname === path;
 
   return (
     <nav className="navbar">
       <div className="navbar-title">Katta!</div>
       <div className="navbar-links">
-        <button
-          className={isActive('/home') ? 'nav-button active' : 'nav-button'}
-          onClick={() => handleNavigation('/home')}
-        >
+        <button className="nav-button" onClick={() => handleNavigation('feed')}>
           Home
         </button>
-        <button
-          className={isActive('/search') ? 'nav-button active' : 'nav-button'}
-          onClick={() => handleNavigation('/search')}
-        >
+        <button className="nav-button" onClick={() => handleNavigation('search')}>
           Search
         </button>
-        <button
-          className={isActive('/profile') ? 'nav-button active' : 'nav-button'}
-          onClick={() => handleNavigation('/profile')}
-        >
+        <button className="nav-button" onClick={() => handleNavigation('profile')}>
           Profile
         </button>
         <button className="nav-button logout" onClick={() => handleNavigation('logout')}>
