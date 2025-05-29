@@ -2,10 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import axios from 'axios';
 import './Profile.css'
+import Modal from '../Modals/FollowerModal';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [expandedPostId, setExpandedPostId] = useState(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalUsers, setModalUsers] = useState([]);
+  const openModal = (title, user) => {
+    setModalTitle(title);
+    setModalUsers(user);
+    setModalOpen(true);
+  }
+  const closeModal = () => {
+    setModalOpen(false);
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -24,6 +37,22 @@ const Profile = () => {
     setExpandedPostId(expandedPostId === postId ? null : postId);
   };
 
+  const handleUserUnfollowed = (userId) => {
+    setUser(prevUser => {
+      const updatedFollowing = { ...prevUser.following };
+      delete updatedFollowing[userId];
+
+      const updatedFollowers = { ...prevUser.followers };
+      // Optional: remove from followers if needed
+
+      return {
+        ...prevUser,
+        following: updatedFollowing,
+        followers: updatedFollowers
+      };
+    });
+  };
+
   if (!user) return <div>Loading...!</div>;
 
   return (
@@ -38,8 +67,29 @@ const Profile = () => {
             <span className='name'>{user.name}</span>
             <div className='stats'>
               <div>{user.posts?.length || 0} Posts</div>
-              <div>{Object.keys(user.followers || {}).length} Followers</div>
-              <div>{Object.keys(user.following || {}).length} Following</div>
+              <div
+                onClick={() =>
+                  openModal(
+                    'Followers',
+                    Object.entries(user.followers || {}).map(([id, username]) => ({ id, username }))
+                  )
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                {Object.keys(user.followers || {}).length} Followers
+              </div>
+              <div
+                onClick={() =>
+                  openModal(
+                    'Following',
+                    Object.entries(user.following || {}).map(([id, username]) => ({ id, username }))
+                  )
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                {Object.keys(user.following || {}).length} Following
+              </div>
+
             </div>
             <button className='edit-btn'>Edit Profile</button>
           </div>
@@ -74,6 +124,16 @@ const Profile = () => {
           ))}
         </div>
       </div>
+      {modalOpen && (
+        <Modal
+          title={modalTitle}
+          users={modalUsers}
+          onclose={closeModal}
+          currentUserFollowing={Object.entries(user.following || {}).map(([id, username]) => ({ id, username }))}
+          onUserUnfollowed={handleUserUnfollowed}
+        />
+
+      )}
     </div>
   )
 };
