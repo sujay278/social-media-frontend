@@ -2,28 +2,28 @@ import React, { useState } from "react";
 import axios from "axios";
 import './FollowerModal.css';
 
-const FollowerModal = ({ title, users, onclose, currentUserFollowing, onUserUnfollowed }) => {
-    const [unfollowedUserIds, setUnfollowedUserIds] = useState(new Set());
-    const followingIds = new Set(currentUserFollowing?.map(user => user.id));
+const FollowerModal = ({ title, users, onclose, currentUserFollowing, onFollowToggle }) => {
+    const [localFollowingIds, setLocalFollowingIds] = useState(new Set(currentUserFollowing.map(user => user.id)));
 
-    const handleUnfollow = async (userId) => {
+    const toggleFollow = async (userId, username) => {
         const token = localStorage.getItem("token");
-        setUnfollowedUserIds(prev => new Set(prev).add(userId));
+        const isFollowing = localFollowingIds.has(userId);
+
         try {
-            const res = await axios.post(`http://localhost:8989/katta/users/unfollow/${userId}`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+            const url = `http://localhost:8989/katta/users/${isFollowing ? 'unfollow' : 'follow'}/${userId}`;
+            await axios.post(url, {}, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            console.log("Unfollowed:", res.data);
-            onUserUnfollowed(userId); // Notify parent
+
+            setLocalFollowingIds(prev => {
+                const updated = new Set(prev);
+                isFollowing ? updated.delete(userId) : updated.add(userId);
+                return updated;
+            });
+
+            onFollowToggle(userId, username, isFollowing);
         } catch (err) {
-            console.error("Error unfollowing user:", err);
-            setUnfollowedUserIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(userId);
-                return newSet;
-            });
+            console.error(`Error ${isFollowing ? 'unfollowing' : 'following'} user:`, err);
         }
     };
 
@@ -37,18 +37,16 @@ const FollowerModal = ({ title, users, onclose, currentUserFollowing, onUserUnfo
                         <li>No {title}</li>
                     ) : (
                         users.map((user) => {
-                            const showUnfollow = (title === "Following" || followingIds.has(user.id)) && !unfollowedUserIds.has(user.id);
+                            const isFollowing = localFollowingIds.has(user.id);
                             return (
                                 <li key={user.id} className="user-item">
                                     {user.username}
-                                    {showUnfollow && (
-                                        <button
-                                            className="unfollow-btn"
-                                            onClick={() => handleUnfollow(user.id)}
-                                        >
-                                            Unfollow
-                                        </button>
-                                    )}
+                                    <button
+                                        className={isFollowing ? "unfollow-btn" : "follow-btn"}
+                                        onClick={() => toggleFollow(user.id, user.username)}
+                                    >
+                                        {isFollowing ? "Unfollow" : "Follow"}
+                                    </button>
                                 </li>
                             );
                         })
