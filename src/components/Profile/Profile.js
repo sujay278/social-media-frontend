@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import axios from 'axios';
-import './Profile.css'
+import './Profile.css';
 import Modal from '../Modals/FollowerModal';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [expandedPostId, setExpandedPostId] = useState(null);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalUsers, setModalUsers] = useState([]);
-  const openModal = (title, user) => {
+
+  const openModal = (title, users) => {
     setModalTitle(title);
-    setModalUsers(user);
+    setModalUsers(users);
     setModalOpen(true);
-  }
+  };
+
   const closeModal = () => {
     setModalOpen(false);
-  }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,25 +31,24 @@ const Profile = () => {
       .then((res) => {
         setUser(res.data);
       })
-      .catch((err) => console.error("Error fetching user :", err));
+      .catch((err) => console.error("Error fetching user:", err));
   }, []);
 
   const toggleComments = (postId) => {
     setExpandedPostId(expandedPostId === postId ? null : postId);
   };
 
-  const handleUserUnfollowed = (userId) => {
-    setUser(prevUser => {
-      const updatedFollowing = { ...prevUser.following };
-      delete updatedFollowing[userId];
-
-      const updatedFollowers = { ...prevUser.followers };
-      // Optional: remove from followers if needed
-
+  const handleFollowToggle = (userId, username, isCurrentlyFollowing) => {
+    setUser(prev => {
+      const updatedFollowing = { ...prev.following };
+      if (isCurrentlyFollowing) {
+        delete updatedFollowing[userId];
+      } else {
+        updatedFollowing[userId] = username;
+      }
       return {
-        ...prevUser,
-        following: updatedFollowing,
-        followers: updatedFollowers
+        ...prev,
+        following: updatedFollowing
       };
     });
   };
@@ -89,11 +89,9 @@ const Profile = () => {
               >
                 {Object.keys(user.following || {}).length} Following
               </div>
-
             </div>
             <button className='edit-btn'>Edit Profile</button>
           </div>
-
           <div className='hamburger'>&#9776;</div>
         </div>
 
@@ -109,33 +107,29 @@ const Profile = () => {
                   {expandedPostId === post.postId ? <FaChevronDown /> : <FaChevronRight />}
                 </span>
               </div>
-
               {expandedPostId === post.postId &&
                 post.comments.map((comment) => (
                   <div className='comment' key={comment.commentId}>
                     <div className='comment-profile'></div>
-                    <div>
-                      {/* <strong>comment.commenter</strong><br/> later commenter's id can be added once added BE response */}
-                      {comment.comment}
-                    </div>
+                    <div>{comment.comment}</div>
                   </div>
                 ))}
             </div>
           ))}
         </div>
       </div>
+
       {modalOpen && (
         <Modal
           title={modalTitle}
           users={modalUsers}
           onclose={closeModal}
           currentUserFollowing={Object.entries(user.following || {}).map(([id, username]) => ({ id, username }))}
-          onUserUnfollowed={handleUserUnfollowed}
+          onFollowToggle={handleFollowToggle}
         />
-
       )}
     </div>
-  )
+  );
 };
 
 export default Profile;

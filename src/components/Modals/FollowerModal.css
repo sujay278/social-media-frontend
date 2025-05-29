@@ -40,6 +40,17 @@
     margin-top: 20px;
 }
 
+.follow-btn {
+    margin-left: 10px;
+    padding: 4px 8px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
 .unfollow-btn {
     margin-left: 10px;
     padding: 4px 8px;
