@@ -12,35 +12,37 @@ import PrivateRoute from './components/Auth/PrivateRoute/PrivateRoute';
 function App() {
   return (
     <Router>
-      <ToastContainer />
-      <Routes>
-        <Route path="/auth" element={<AuthPage />} />
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Home />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/search"
-          element={
-            <PrivateRoute>
-              <Search />
-            </PrivateRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <div className="App">
+        <ToastContainer />
+        <Routes>
+          <Route path="/login" element={<AuthPage />} />
+          <Route
+            path="/home"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <PrivateRoute>
+                <Search />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
