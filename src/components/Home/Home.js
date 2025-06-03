@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './Home.css';
 import Navbar from '../Navbar/Navbar';
 import Profile from '../Profile/Profile';
@@ -16,14 +16,11 @@ const Home = () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:8989/katta/users/followings', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const followedUsers = response.data;
 
-        // Flatten all posts from followed users
         const allPosts = followedUsers.flatMap(user =>
           user.posts.map(post => ({
             ...post,
@@ -33,8 +30,10 @@ const Home = () => {
           }))
         );
 
-        // Sort posts by date descending
-        const sortedPosts = allPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const sortedPosts = allPosts.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
         setPosts(sortedPosts);
       } catch (error) {
         console.error('Error fetching followed users or posts:', error);
@@ -46,7 +45,6 @@ const Home = () => {
     }
   }, [activeSection]);
 
-  // Filter posts by caption or comment content
   const filteredPosts = posts.filter(post =>
     post.caption.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.comments?.some(comment =>
