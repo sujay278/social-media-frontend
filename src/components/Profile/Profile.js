@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Profile.css';
 import Modal from '../Modals/FollowerModal';
+import PostCard from '../PostCard/PostCard';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
-  const [expandedPostId, setExpandedPostId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalUsers, setModalUsers] = useState([]);
@@ -33,10 +32,6 @@ const Profile = () => {
       })
       .catch((err) => console.error("Error fetching user:", err));
   }, []);
-
-  const toggleComments = (postId) => {
-    setExpandedPostId(expandedPostId === postId ? null : postId);
-  };
 
   const handleFollowToggle = (userId, username, isCurrentlyFollowing) => {
     setUser(prev => {
@@ -98,23 +93,15 @@ const Profile = () => {
         <div className='posts-section'>
           <h3>Posts</h3>
           {user.posts.map((post) => (
-            <div className='post-card' key={post.postId}>
-              <div className='caption'>{post.caption}</div>
-              <div className='comment-count'>
-                <span>&#128172;</span>
-                <span>{post.comments.length}</span>
-                <span className='comment-toggle' onClick={() => toggleComments(post.postId)}>
-                  {expandedPostId === post.postId ? <FaChevronDown /> : <FaChevronRight />}
-                </span>
-              </div>
-              {expandedPostId === post.postId &&
-                post.comments.map((comment) => (
-                  <div className='comment' key={comment.commentId}>
-                    <div className='comment-profile'></div>
-                    <div>{comment.comment}</div>
-                  </div>
-                ))}
-            </div>
+            <PostCard
+              key={post.postId}
+              post={{
+                ...post,
+                username: user.username,
+                name: user.name,
+                userId: user.userId,
+              }}
+            />
           ))}
         </div>
       </div>

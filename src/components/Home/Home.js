@@ -3,7 +3,7 @@ import './Home.css';
 import Navbar from '../Navbar/Navbar';
 import Profile from '../Profile/Profile';
 import Search from '../Search/Search';
-import PostCard from './PostCard';
+import PostCard from '../PostCard/PostCard';
 import axios from 'axios';
 
 const Home = () => {
