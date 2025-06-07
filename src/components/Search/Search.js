@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import UserCard from './UserCard';
 import './Search.css';
@@ -48,7 +47,7 @@ const Search = () => {
     };
   };
 
-  const handleSearch = useCallback(
+  const debouncedSearch = useMemo(() =>
     debounce((term) => {
       const lowerTerm = term.toLowerCase();
       const matches = allUsers.filter(
@@ -57,17 +56,15 @@ const Search = () => {
           user.name.toLowerCase().includes(lowerTerm)
       );
       setFilteredUsers(matches);
-    }, 300),
-    [allUsers]
-  );
+    }, 300), [allUsers]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredUsers([]);
     } else {
-      handleSearch(searchTerm);
+      debouncedSearch(searchTerm);
     }
-  }, [searchTerm, handleSearch]);
+  }, [searchTerm, debouncedSearch]);
 
   const handleUserClick = (user) => {
     console.log('User clicked:', user);
@@ -84,13 +81,10 @@ const Search = () => {
         onFocus={handleFocus}
         className="search-input"
       />
-
       {loading && <div className="loading">Loading users...</div>}
-
       {!searchTerm && !loading && (
         <p className="empty-state">Start typing to search users</p>
       )}
-
       {filteredUsers.length > 0 && (
         <div className="search-results">
           {filteredUsers.map(user => (
@@ -98,7 +92,6 @@ const Search = () => {
           ))}
         </div>
       )}
-
       {searchTerm && !loading && filteredUsers.length === 0 && (
         <p className="empty-state">No users found.</p>
       )}
