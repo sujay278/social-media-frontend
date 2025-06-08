@@ -1,8 +1,8 @@
 import './UserCard.css';
 
-const UserCard = ({ user }) => {
+const UserCard = ({ user, onClick }) => {
   return (
-    <div className="user-card">
+    <div className="user-card" onClick={() => onClick(user)} style={{ cursor: 'pointer' }}>
       <div className="user-avatar">
         <div className="avatar-placeholder">👤</div>
       </div>

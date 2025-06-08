@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import UserCard from './UserCard';
+import Profile from '../Profile/Profile';
 import './Search.css';
 
 const Search = () => {
@@ -9,6 +10,7 @@ const Search = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -66,9 +68,16 @@ const Search = () => {
     }
   }, [searchTerm, debouncedSearch]);
 
-  const handleUserClick = (user) => {
-    console.log('User clicked:', user);
-  };
+  if (selectedUser) {
+    return (
+      <>
+        <button onClick={() => setSelectedUser(null)} className="back-button">
+          ← Back to Search
+        </button>
+        <Profile userData={selectedUser} />
+      </>
+    );
+  }
 
   return (
     <div className="page-content">
@@ -88,7 +97,7 @@ const Search = () => {
       {filteredUsers.length > 0 && (
         <div className="search-results">
           {filteredUsers.map(user => (
-            <UserCard key={user.userId} user={user} onClick={handleUserClick} />
+            <UserCard key={user.userId} user={user} onClick={() => setSelectedUser(user)} />
           ))}
         </div>
       )}
