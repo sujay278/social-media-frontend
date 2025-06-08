@@ -2,13 +2,22 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Profile.css';
 import Modal from '../Modals/FollowerModal';
-import PostCard from '../PostCard/PostCard';
-
-const Profile = () => {
-  const [user, setUser] = useState(null);
+import PostCard from '../PostCard/PostCard'; const Profile = ({ userData }) => {
+  const [user, setUser] = useState(userData || null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalUsers, setModalUsers] = useState([]);
+
+  useEffect(() => {
+    if (!userData) {
+      const token = localStorage.getItem("token");
+      axios.get("http://localhost:8989/katta/users/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then((res) => setUser(res.data))
+        .catch((err) => console.error("Error fetching user:", err));
+    }
+  }, [userData]);
 
   const openModal = (title, users) => {
     setModalTitle(title);
@@ -16,22 +25,7 @@ const Profile = () => {
     setModalOpen(true);
   };
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios.get("http://localhost:8989/katta/users/me", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then((res) => {
-        setUser(res.data);
-      })
-      .catch((err) => console.error("Error fetching user:", err));
-  }, []);
+  const closeModal = () => setModalOpen(false);
 
   const handleFollowToggle = (userId, username, isCurrentlyFollowing) => {
     setUser(prev => {
@@ -41,10 +35,7 @@ const Profile = () => {
       } else {
         updatedFollowing[userId] = username;
       }
-      return {
-        ...prev,
-        following: updatedFollowing
-      };
+      return { ...prev, following: updatedFollowing };
     });
   };
 

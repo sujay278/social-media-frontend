@@ -1,7 +1,7 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import UserCard from './UserCard';
+import Profile from '../Profile/Profile';
 import './Search.css';
 
 const Search = () => {
@@ -10,6 +10,7 @@ const Search = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -48,7 +49,7 @@ const Search = () => {
     };
   };
 
-  const handleSearch = useCallback(
+  const debouncedSearch = useMemo(() =>
     debounce((term) => {
       const lowerTerm = term.toLowerCase();
       const matches = allUsers.filter(
@@ -57,21 +58,26 @@ const Search = () => {
           user.name.toLowerCase().includes(lowerTerm)
       );
       setFilteredUsers(matches);
-    }, 300),
-    [allUsers]
-  );
+    }, 300), [allUsers]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredUsers([]);
     } else {
-      handleSearch(searchTerm);
+      debouncedSearch(searchTerm);
     }
-  }, [searchTerm, handleSearch]);
+  }, [searchTerm, debouncedSearch]);
 
-  const handleUserClick = (user) => {
-    console.log('User clicked:', user);
-  };
+  if (selectedUser) {
+    return (
+      <>
+        <button onClick={() => setSelectedUser(null)} className="back-button">
+          ← Back to Search
+        </button>
+        <Profile userData={selectedUser} />
+      </>
+    );
+  }
 
   return (
     <div className="page-content">
@@ -84,21 +90,17 @@ const Search = () => {
         onFocus={handleFocus}
         className="search-input"
       />
-
       {loading && <div className="loading">Loading users...</div>}
-
       {!searchTerm && !loading && (
         <p className="empty-state">Start typing to search users</p>
       )}
-
       {filteredUsers.length > 0 && (
         <div className="search-results">
           {filteredUsers.map(user => (
-            <UserCard key={user.userId} user={user} onClick={handleUserClick} />
+            <UserCard key={user.userId} user={user} onClick={() => setSelectedUser(user)} />
           ))}
         </div>
       )}
-
       {searchTerm && !loading && filteredUsers.length === 0 && (
         <p className="empty-state">No users found.</p>
       )}
