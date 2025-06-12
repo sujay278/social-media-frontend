@@ -5,25 +5,27 @@ import './PostCard.css';
 const PostCard = ({ post }) => {
   const [expanded, setExpanded] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState(post.comments || []);
+  const [comments, setComments] = useState(post.comments ?? []);
   const [submitting, setSubmitting] = useState(false);
   const [showMenuId, setShowMenuId] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedCommentText, setEditedCommentText] = useState('');
+
+  const token = localStorage.getItem('token');
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
-
-    const token = localStorage.getItem('token');
     try {
       setSubmitting(true);
       const response = await axios.post(
         'http://localhost:8989/katta/comments/comment',
         {
           comment: commentText,
-          post: { postId: post.postId }
+          post: { postId: post.postId },
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setComments([...comments, response.data]);
@@ -36,19 +38,43 @@ const PostCard = ({ post }) => {
   };
 
   const handleDeleteComment = async (commentId) => {
-    const token = localStorage.getItem('token');
     try {
       await axios.delete(`http://localhost:8989/katta/comments/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setComments(comments.filter(c => c.commentId !== commentId));
+      setComments(comments.filter((c) => c.commentId !== commentId));
     } catch (error) {
       console.error('Error deleting comment:', error);
     }
   };
 
+  const handleEditComment = async (commentId) => {
+    if (!editedCommentText.trim()) return;
+    try {
+      await axios.put(
+        'http://localhost:8989/katta/comments/comment',
+        {
+          commentId,
+          comment: editedCommentText,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setComments(
+        comments.map((c) =>
+          c.commentId === commentId ? { ...c, comment: editedCommentText } : c
+        )
+      );
+      setEditingCommentId(null);
+      setEditedCommentText('');
+    } catch (error) {
+      console.error('Error editing comment:', error);
+    }
+  };
+
   const toggleMenu = (commentId) => {
-    setShowMenuId(prev => (prev === commentId ? null : commentId));
+    setShowMenuId((prev) => (prev === commentId ? null : commentId));
   };
 
   return (
@@ -61,12 +87,16 @@ const PostCard = ({ post }) => {
         />
         <div className="user-info">
           <strong>{post.username}</strong>
-          <span className="timestamp">{new Date(post.timestamp).toLocaleString()}</span>
+          <span className="timestamp">
+            {new Date(post.timestamp).toLocaleString()}
+          </span>
         </div>
       </div>
+
       <div className="post-caption">
         <p>{post.caption}</p>
       </div>
+
       <div className="post-actions">
         <div className="action-left">
           <button className="like-button">❤️</button>
@@ -84,19 +114,59 @@ const PostCard = ({ post }) => {
           <ul className="comment-list">
             {comments.map((comment) => (
               <li key={comment.commentId} className="comment-item">
-                <div className="comment-text">{comment.comment}</div>
+                {editingCommentId === comment.commentId ? (
+                  <div className="edit-comment-wrapper">
+                    <input
+                      type="text"
+                      value={editedCommentText}
+                      onChange={(e) => setEditedCommentText(e.target.value)}
+                      autoFocus
+                    />
+                    <button
+                      className="edit-submit-button"
+                      onClick={() => handleEditComment(comment.commentId)}
+                      disabled={!editedCommentText.trim()}
+                    >
+                      Save
+                    </button>
+                  </div>
+
+                ) : (
+                  <div className="comment-text">{comment.comment}</div>
+                )}
+
                 <div className="comment-menu-wrapper">
-                  <button className="comment-menu-button" onClick={() => toggleMenu(comment.commentId)}>⋮</button>
+                  <button
+                    className="comment-menu-button"
+                    onClick={() => toggleMenu(comment.commentId)}
+                  >
+                    ⋮
+                  </button>
                   {showMenuId === comment.commentId && (
                     <div className="comment-menu-dropdown">
-                      <button className="comment-menu-option">Edit</button>
-                      <button className="comment-menu-option" onClick={() => handleDeleteComment(comment.commentId)}>Delete</button>
+                      <button
+                        className="comment-menu-option"
+                        onClick={() => {
+                          setEditingCommentId(comment.commentId);
+                          setEditedCommentText(comment.comment);
+                          setShowMenuId(null);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="comment-menu-option"
+                        onClick={() => handleDeleteComment(comment.commentId)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   )}
                 </div>
               </li>
             ))}
           </ul>
+
           <form className="comment-form" onSubmit={handleCommentSubmit}>
             <input
               type="text"
@@ -106,7 +176,7 @@ const PostCard = ({ post }) => {
               disabled={submitting}
             />
             <button type="submit" disabled={submitting || !commentText.trim()}>
-              &#10148;
+              ➤
             </button>
           </form>
         </>
