@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Profile.css';
 import Modal from '../Modals/FollowerModal';
-import PostCard from '../PostCard/PostCard'; const Profile = ({ userData }) => {
+import PostCard from '../PostCard/PostCard';
+const Profile = ({ userData }) => {
   const [user, setUser] = useState(userData || null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
