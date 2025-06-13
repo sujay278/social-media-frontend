@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import './Login.css';
@@ -30,6 +30,17 @@ function Login() {
       });
 
       localStorage.setItem('token', response.data);
+
+      try {
+        const userData = await axios.get("http://localhost:8989/katta/users/me", {
+          headers: { Authorization: `Bearer ${response.data}` }
+        });
+
+        sessionStorage.setItem('userData', JSON.stringify(userData.data));
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+
       toast.success('Logged in successfully!', {
         position: 'top-right',
         autoClose: 1000,
