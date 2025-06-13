@@ -10,6 +10,8 @@ const PostCard = ({ post }) => {
   const [showMenuId, setShowMenuId] = useState(null);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editedCommentText, setEditedCommentText] = useState('');
+  const loggedInUser = JSON.parse(sessionStorage.getItem("userData"));
+  const loggedInUserId = loggedInUser?.userId;
 
   const token = localStorage.getItem('token');
 
@@ -135,34 +137,37 @@ const PostCard = ({ post }) => {
                   <div className="comment-text">{comment.comment}</div>
                 )}
 
-                <div className="comment-menu-wrapper">
-                  <button
-                    className="comment-menu-button"
-                    onClick={() => toggleMenu(comment.commentId)}
-                  >
-                    ⋮
-                  </button>
-                  {showMenuId === comment.commentId && (
-                    <div className="comment-menu-dropdown">
-                      <button
-                        className="comment-menu-option"
-                        onClick={() => {
-                          setEditingCommentId(comment.commentId);
-                          setEditedCommentText(comment.comment);
-                          setShowMenuId(null);
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="comment-menu-option"
-                        onClick={() => handleDeleteComment(comment.commentId)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {comment.commenterId === loggedInUserId && (
+                  <div className="comment-menu-wrapper">
+                    <button
+                      className="comment-menu-button"
+                      onClick={() => toggleMenu(comment.commentId)}
+                    >
+                      ⋮
+                    </button>
+                    {showMenuId === comment.commentId && (
+                      <div className="comment-menu-dropdown">
+                        <button
+                          className="comment-menu-option"
+                          onClick={() => {
+                            setEditingCommentId(comment.commentId);
+                            setEditedCommentText(comment.comment);
+                            setShowMenuId(null);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="comment-menu-option"
+                          onClick={() => handleDeleteComment(comment.commentId)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </li>
             ))}
           </ul>

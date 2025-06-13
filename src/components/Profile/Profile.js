@@ -11,12 +11,20 @@ const Profile = ({ userData }) => {
 
   useEffect(() => {
     if (!userData) {
-      const token = localStorage.getItem("token");
-      axios.get("http://localhost:8989/katta/users/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then((res) => setUser(res.data))
-        .catch((err) => console.error("Error fetching user:", err));
+      const storedUser = sessionStorage.getItem("userData");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        const token = localStorage.getItem("token");
+        axios.get("http://localhost:8989/katta/users/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then((res) => {
+            setUser(res.data);
+            sessionStorage.setItem("userData", JSON.stringify(res.data));
+          })
+          .catch((err) => console.error("Error fetching user:", err));
+      }
     }
   }, [userData]);
 
