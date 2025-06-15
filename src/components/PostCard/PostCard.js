@@ -12,7 +12,8 @@ const PostCard = ({ post }) => {
   const [editedCommentText, setEditedCommentText] = useState('');
   const loggedInUser = JSON.parse(sessionStorage.getItem("userData"));
   const loggedInUserId = loggedInUser?.userId;
-
+  const [likedBy, setLikedBy] = useState(post.likedBy ?? []);
+  const isLiked = likedBy.some(user => user.userId === loggedInUserId);
   const token = localStorage.getItem('token');
 
   const handleCommentSubmit = async (e) => {
@@ -78,6 +79,23 @@ const PostCard = ({ post }) => {
   const toggleMenu = (commentId) => {
     setShowMenuId((prev) => (prev === commentId ? null : commentId));
   };
+  const handleLikeToggle = async () => {
+    try {
+      if (isLiked) {
+        await axios.delete(`http://localhost:8989/katta/posts/${post.postId}/unlike`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLikedBy(likedBy.filter(user => user.userId !== loggedInUserId));
+      } else {
+        await axios.post(`http://localhost:8989/katta/posts/${post.postId}/like`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLikedBy([...likedBy, { userId: loggedInUserId, username: loggedInUser.username }]);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
 
   return (
     <div className="post-card">
@@ -101,7 +119,13 @@ const PostCard = ({ post }) => {
 
       <div className="post-actions">
         <div className="action-left">
-          <button className="like-button">❤️</button>
+          <button
+            className="like-button"
+            onClick={handleLikeToggle}
+            title={likedBy.map(user => user.username).join(', ') || 'No likes yet'}
+          >
+            {isLiked ? '💖' : '🤍'} {likedBy.length}
+          </button>
           <button className="comment-toggle" onClick={() => setExpanded(!expanded)}>
             💬 {comments.length}
           </button>
