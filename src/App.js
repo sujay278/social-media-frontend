@@ -14,7 +14,7 @@ function App() {
     <Router>
       <div className="App">
         <ToastContainer />
-        <Navbar /> {/* Move Navbar here so it appears on all pages */}
+        <Navbar />
         <Routes>
           <Route path="/login" element={<AuthPage />} />
           <Route

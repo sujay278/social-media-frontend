@@ -125,3 +125,33 @@
   font-size: 0.9rem;
   color: #333;
 }
+
+.unfollow-btn {
+  padding: 6px 12px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.3s ease;
+}
+
+.unfollow-btn:hover {
+  background-color: #e60000;
+}
+
+.follow-btn {
+  padding: 6px 12px;
+  background-color: #41be4e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.3s ease;
+}
+
+.follow-btn:hover {
+  background-color: #1f952b;
+}
