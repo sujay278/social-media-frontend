@@ -3,11 +3,17 @@ import axios from 'axios';
 import './Profile.css';
 import Modal from '../Modals/FollowerModal';
 import PostCard from '../PostCard/PostCard';
+
 const Profile = ({ userData }) => {
   const [user, setUser] = useState(userData || null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalUsers, setModalUsers] = useState([]);
+
+  // Get the logged-in user from sessionStorage
+  const loggedInUser = JSON.parse(sessionStorage.getItem("userData"));
+  const isOwnProfile = user?.username === loggedInUser?.username;
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!userData) {
@@ -15,7 +21,6 @@ const Profile = ({ userData }) => {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       } else {
-        const token = localStorage.getItem("token");
         axios.get("http://localhost:8989/katta/users/me", {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -36,16 +41,23 @@ const Profile = ({ userData }) => {
 
   const closeModal = () => setModalOpen(false);
 
-  const handleFollowToggle = (userId, username, isCurrentlyFollowing) => {
-    setUser(prev => {
-      const updatedFollowing = { ...prev.following };
-      if (isCurrentlyFollowing) {
-        delete updatedFollowing[userId];
-      } else {
-        updatedFollowing[userId] = username;
-      }
-      return { ...prev, following: updatedFollowing };
-    });
+  const handleFollowToggle = async () => {
+    try {
+      const endpoint = user.isFollowing
+        ? `http://localhost:8989/katta/users/unfollow/${user.userId}`
+        : `http://localhost:8989/katta/users/follow/${user.userId}`;
+
+      await axios.post(endpoint, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setUser((prev) => ({
+        ...prev,
+        isFollowing: !prev.isFollowing
+      }));
+    } catch (error) {
+      console.error("Failed to toggle follow:", error);
+    }
   };
 
   if (!user) return <div>Loading...!</div>;
@@ -85,14 +97,24 @@ const Profile = ({ userData }) => {
                 {Object.keys(user.following || {}).length} Following
               </div>
             </div>
-            <button className='edit-btn'>Edit Profile</button>
+            {isOwnProfile ? (
+              <button className='edit-btn'>Edit Profile</button>
+            ) : (
+              <button
+                className={user.isFollowing ? "unfollow-btn" : "follow-btn"}
+                onClick={handleFollowToggle}
+              >
+                {user.isFollowing ? "Unfollow" : "Follow"}
+              </button>
+
+            )}
           </div>
           <div className='hamburger'>&#9776;</div>
         </div>
 
         <div className='posts-section'>
           <h3>Posts</h3>
-          {user.posts.map((post) => (
+          {user.posts?.map((post) => (
             <PostCard
               key={post.postId}
               post={{
@@ -112,7 +134,10 @@ const Profile = ({ userData }) => {
           users={modalUsers}
           onclose={closeModal}
           currentUserFollowing={Object.entries(user.following || {}).map(([id, username]) => ({ id, username }))}
-          onFollowToggle={handleFollowToggle}
+          onFollowToggle={(userId, username, isCurrentlyFollowing) => {
+            // optional: this handles follow toggle inside modal
+            console.log(`Toggling follow for ${username}`);
+          }}
         />
       )}
     </div>
