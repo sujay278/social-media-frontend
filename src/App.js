@@ -7,7 +7,7 @@ import Home from './components/Home/Home';
 import Profile from './components/Profile/Profile';
 import Search from './components/Search/Search';
 import PrivateRoute from './components/Auth/PrivateRoute/PrivateRoute';
-import Navbar from './components/Navbar/Navbar'; // Make sure this is imported
+import Navbar from './components/Navbar/Navbar';
 
 function App() {
   return (
