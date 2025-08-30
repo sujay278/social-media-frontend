@@ -3,6 +3,7 @@ import axios from 'axios';
 import './Profile.css';
 import Modal from '../Modals/FollowerModal';
 import PostCard from '../PostCard/PostCard';
+import CreatePost from '../PostCard/CreatePost';
 
 const Profile = ({ userData }) => {
   const [user, setUser] = useState(userData || null);
@@ -13,6 +14,9 @@ const Profile = ({ userData }) => {
   // Get the logged-in user from sessionStorage
   const loggedInUser = JSON.parse(sessionStorage.getItem("userData"));
   const isOwnProfile = user?.username === loggedInUser?.username;
+  const [isFollowingLocal, setIsFollowingLocal] = useState(
+    loggedInUser?.following?.[user?.userId] !== undefined
+  );
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -31,7 +35,7 @@ const Profile = ({ userData }) => {
           .catch((err) => console.error("Error fetching user:", err));
       }
     }
-  }, [userData]);
+  }, [userData, token]);
 
   const openModal = (title, users) => {
     setModalTitle(title);
@@ -43,18 +47,14 @@ const Profile = ({ userData }) => {
 
   const handleFollowToggle = async () => {
     try {
-      const endpoint = user.isFollowing
+      const endpoint = isFollowingLocal
         ? `http://localhost:8989/katta/users/unfollow/${user.userId}`
         : `http://localhost:8989/katta/users/follow/${user.userId}`;
 
       await axios.post(endpoint, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      setUser((prev) => ({
-        ...prev,
-        isFollowing: !prev.isFollowing
-      }));
+      setIsFollowingLocal(!isFollowingLocal);
     } catch (error) {
       console.error("Failed to toggle follow:", error);
     }
@@ -101,12 +101,11 @@ const Profile = ({ userData }) => {
               <button className='edit-btn'>Edit Profile</button>
             ) : (
               <button
-                className={user.isFollowing ? "unfollow-btn" : "follow-btn"}
+                className={isFollowingLocal ? "unfollow-btn" : "follow-btn"}
                 onClick={handleFollowToggle}
               >
-                {user.isFollowing ? "Unfollow" : "Follow"}
+                {isFollowingLocal ? "Unfollow" : "Follow"}
               </button>
-
             )}
           </div>
           <div className='hamburger'>&#9776;</div>
@@ -114,6 +113,25 @@ const Profile = ({ userData }) => {
 
         <div className='posts-section'>
           <h3>Posts</h3>
+          {isOwnProfile && (
+            <CreatePost
+              onPostCreated={(newPost) => {
+                const enrichedPost = {
+                  ...newPost,
+                  likedBy: [],
+                  comments: [],
+                  timestamp: new Date().toISOString(),
+                  username: user.username,
+                  name: user.name,
+                  userId: user.userId,
+                };
+                setUser((prev) => ({
+                  ...prev,
+                  posts: [enrichedPost, ...(prev.posts || [])],
+                }));
+              }}
+            />
+          )}
           {user.posts?.map((post) => (
             <PostCard
               key={post.postId}
@@ -134,8 +152,7 @@ const Profile = ({ userData }) => {
           users={modalUsers}
           onclose={closeModal}
           currentUserFollowing={Object.entries(user.following || {}).map(([id, username]) => ({ id, username }))}
-          onFollowToggle={(userId, username, isCurrentlyFollowing) => {
-            // optional: this handles follow toggle inside modal
+          onFollowToggle={(username) => {
             console.log(`Toggling follow for ${username}`);
           }}
         />

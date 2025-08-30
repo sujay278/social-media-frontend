@@ -1,0 +1,35 @@
+.create-post-container {
+  margin: 20px 0;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.create-post-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-textarea {
+  resize: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.post-btn {
+  padding: 8px 16px;
+  background-color: #41be4e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.post-btn:hover {
+  background-color: #1f952b;
+}
